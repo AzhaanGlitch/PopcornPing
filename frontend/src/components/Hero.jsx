@@ -1,34 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
-  const [showSignup, setShowSignup] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <>
-      <style jsx global>{`
-        body {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-        }
-        
-        body::-webkit-scrollbar {
-          width: 8px;
-        }
-        
-        body::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        
-        body::-webkit-scrollbar-thumb {
-          background-color: rgba(255, 255, 255, 0.1);
-          border-radius: 10px;
-        }
-        
-        body::-webkit-scrollbar-thumb:hover {
-          background-color: rgba(255, 255, 255, 0.2);
-        }
-      `}</style>
-
       <div className="min-h-screen bg-black relative overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0">
@@ -57,60 +34,28 @@ const Hero = () => {
           <div className="absolute top-2/3 right-1/3 w-52 h-52 bg-violet-500/20 rounded-full blur-[85px] animate-float-slowest"></div>
         </div>
 
+        {/* Animation Styles */}
         <style jsx>{`
           @keyframes float-slow {
-            0%, 100% {
-              transform: translate(0, 0);
-            }
-            50% {
-              transform: translate(30px, -30px);
-            }
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, -30px); }
           }
-          
           @keyframes float-slower {
-            0%, 100% {
-              transform: translate(0, 0);
-            }
-            50% {
-              transform: translate(-25px, 35px);
-            }
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-25px, 35px); }
           }
-          
           @keyframes float-slowest {
-            0%, 100% {
-              transform: translate(0, 0);
-            }
-            50% {
-              transform: translate(20px, 40px);
-            }
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(20px, 40px); }
           }
-          
           @keyframes pulse-slow {
-            0%, 100% {
-              opacity: 0.2;
-              transform: translate(-50%, -50%) scale(1);
-            }
-            50% {
-              opacity: 0.3;
-              transform: translate(-50%, -50%) scale(1.1);
-            }
+            0%, 100% { opacity: 0.2; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.1); }
           }
-          
-          .animate-float-slow {
-            animation: float-slow 15s ease-in-out infinite;
-          }
-          
-          .animate-float-slower {
-            animation: float-slower 20s ease-in-out infinite;
-          }
-          
-          .animate-float-slowest {
-            animation: float-slowest 25s ease-in-out infinite;
-          }
-          
-          .animate-pulse-slow {
-            animation: pulse-slow 8s ease-in-out infinite;
-          }
+          .animate-float-slow { animation: float-slow 15s ease-in-out infinite; }
+          .animate-float-slower { animation: float-slower 20s ease-in-out infinite; }
+          .animate-float-slowest { animation: float-slowest 25s ease-in-out infinite; }
+          .animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
         `}</style>
 
         {/* Header Navigation */}
@@ -133,7 +78,10 @@ const Hero = () => {
             <a href="#snippets" className="text-gray-400 hover:text-white transition text-sm tracking-wider">
               Snippets
             </a>
-            <button className="text-gray-400 hover:text-white transition text-sm tracking-wider">
+            <button 
+              onClick={() => navigate('/login')}
+              className="text-gray-400 hover:text-white transition text-sm tracking-wider"
+            >
               Login
             </button>
           </nav>
@@ -152,7 +100,7 @@ const Hero = () => {
             </p>
 
             <button 
-              onClick={() => setShowSignup(true)}
+              onClick={() => navigate('/login')}
               className="px-12 py-4 border border-white text-white rounded-full hover:bg-white hover:text-black transition text-xs font-normal tracking-wider uppercase"
               style={{ letterSpacing: '0.2em' }}
             >
@@ -161,36 +109,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-
-      {/* Signup Modal */}
-      {showSignup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="bg-gray-900 border border-gray-700 rounded-lg p-8 max-w-md w-full mx-4">
-            <h2 className="text-2xl font-bold text-white mb-4">Get Started</h2>
-            <p className="text-gray-400 mb-6">Join PopcornPing and start your video collaboration journey.</p>
-            
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white mb-4 focus:outline-none focus:border-purple-500"
-            />
-            
-            <div className="flex space-x-4">
-              <button
-                onClick={() => setShowSignup(false)}
-                className="flex-1 px-6 py-3 border border-gray-600 text-white rounded-lg hover:bg-gray-800 transition"
-              >
-                Cancel
-              </button>
-              <button
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition"
-              >
-                Sign Up
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };

@@ -2,10 +2,12 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Hero from './components/Hero';
-import Features from './components/Features';
 import Dashboard from './components/Dashboard';
 import VideoRoom from './components/VideoRoom';
 import ProtectedRoute from './components/ProtectedRoute';
+import Snippets from './components/Snippets';
+import Footer from './components/Footer';
+import Login from './components/Login';
 
 function App() {
   return (
@@ -13,12 +15,14 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
+            <Route path="/login" element={<Login />} />
             <Route
               path="/"
               element={
                 <>
                   <Hero />
-                  <Features />
+                  <Snippets />
+                  <Footer />
                 </>
               }
             />

@@ -2,6 +2,25 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
+// Icons
+const CloseIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+);
+const GoogleIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M12.479,14.265v-3.279h11.049c0.108,0.571,0.164,1.247,0.164,1.979c0,2.46-0.672,5.502-2.84,7.669 C18.744,22.829,16.051,24,12.483,24C5.869,24,0.308,18.613,0.308,12S5.869,0,12.483,0c3.659,0,6.265,1.436,8.223,3.307L18.392,5.62 c-1.404-1.317-3.307-2.341-5.913-2.341C7.65,3.279,3.873,7.171,3.873,12s3.777,8.721,8.606,8.721c3.132,0,4.916-1.258,6.059-2.401 c0.927-0.927,1.537-2.251,1.777-4.059L12.479,14.265z" />
+  </svg>
+);
+const AtSignIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></svg>
+);
+const UserIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+);
+const LockIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+);
+
 const SignupModal = ({ onClose, onLogin }) => {
   const [formData, setFormData] = useState({
     username: '',
@@ -47,128 +66,134 @@ const SignupModal = ({ onClose, onLogin }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-white">Sign Up Account</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition"
-          >
-            ✕
-          </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      {/* Container echoing the AuthPage styling */}
+      <div className="relative w-full max-w-md bg-black border border-gray-800 rounded-xl overflow-hidden shadow-2xl">
+        
+        {/* Background Gradients */}
+        <div className="absolute inset-0 pointer-events-none opacity-40">
+           <div className="absolute top-0 right-0 h-[300px] w-[300px] bg-purple-900/20 blur-[100px] rounded-full translate-x-1/3 -translate-y-1/3" />
+           <div className="absolute bottom-0 left-0 h-[300px] w-[300px] bg-blue-900/10 blur-[100px] rounded-full -translate-x-1/3 translate-y-1/3" />
         </div>
 
-        <p className="text-gray-400 text-sm mb-6">
-          Enter your personal data to create your account
-        </p>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500 rounded-lg text-red-500 text-sm">
-            {error}
-          </div>
-        )}
-
-        <button
-          onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center space-x-2 bg-white hover:bg-gray-100 text-gray-900 font-semibold py-3 px-4 rounded-lg transition mb-4"
-        >
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
-            <path
-              fill="currentColor"
-              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-            />
-            <path
-              fill="currentColor"
-              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-            />
-            <path
-              fill="currentColor"
-              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-            />
-            <path
-              fill="currentColor"
-              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-            />
-          </svg>
-          <span>Google</span>
+        {/* Close Button */}
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition z-20">
+          <CloseIcon className="w-5 h-5" />
         </button>
 
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-700"></div>
+        <div className="relative z-10 p-8">
+          
+          {/* Header */}
+          <div className="flex flex-col space-y-1 mb-6 text-center md:text-left">
+            <h1 className="text-2xl font-bold tracking-wide text-white">Create Account</h1>
+            <p className="text-gray-400 text-sm">
+              Sign up to start your journey.
+            </p>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-gray-900 text-gray-400">or</span>
+
+          {/* Google Button */}
+          <div className="space-y-2 mb-6">
+            <button
+              onClick={handleGoogleLogin}
+              type="button"
+              className="w-full flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 border border-gray-700 bg-gray-900 hover:bg-gray-800 hover:text-white text-gray-200 transition-colors"
+            >
+              <GoogleIcon className="w-4 h-4 mr-2" />
+              Continue with Google
+            </button>
           </div>
+
+          {/* Separator */}
+          <div className="flex w-full items-center justify-center mb-6">
+            <div className="bg-gray-800 h-px w-full" />
+            <span className="text-gray-500 px-2 text-xs uppercase">OR</span>
+            <div className="bg-gray-800 h-px w-full" />
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-md text-red-500 text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Signup Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            
+            {/* Username */}
+            <div className="space-y-2">
+               <div className="relative">
+                  <input
+                    type="text"
+                    name="username"
+                    placeholder="Username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    required
+                    className="flex h-10 w-full rounded-md border border-gray-700 bg-black px-3 py-2 pl-9 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
+                  />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    <UserIcon className="w-4 h-4" />
+                  </div>
+               </div>
+            </div>
+
+            {/* Email */}
+            <div className="space-y-2">
+               <div className="relative">
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="name@example.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="flex h-10 w-full rounded-md border border-gray-700 bg-black px-3 py-2 pl-9 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
+                  />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    <AtSignIcon className="w-4 h-4" />
+                  </div>
+               </div>
+            </div>
+
+            {/* Password */}
+            <div className="space-y-2">
+               <div className="relative">
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Password (min 6 chars)"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    className="flex h-10 w-full rounded-md border border-gray-700 bg-black px-3 py-2 pl-9 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
+                  />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    <LockIcon className="w-4 h-4" />
+                  </div>
+               </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-purple-600 text-white hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Creating account...' : 'Create Account'}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <p className="mt-6 text-center text-sm text-gray-400">
+            Already have an account?{' '}
+            <button
+              onClick={onLogin}
+              className="text-purple-400 hover:text-purple-300 font-medium underline underline-offset-4"
+            >
+              Log In
+            </button>
+          </p>
         </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-300 text-sm font-medium mb-2">
-              Username
-            </label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="e.g. John"
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-300 text-sm font-medium mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="e.g. john@example.com"
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
-              required
-            />
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-gray-300 text-sm font-medium mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
-              required
-              minLength="6"
-            />
-            <p className="mt-2 text-xs text-gray-500">Must be at least 6 characters</p>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition disabled:opacity-50"
-          >
-            {loading ? 'Creating account...' : 'Sign Up'}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-gray-400 text-sm">
-          Already have an account?{' '}
-          <button
-            onClick={onLogin}
-            className="text-purple-400 hover:text-purple-300 font-semibold"
-          >
-            Log In
-          </button>
-        </p>
       </div>
     </div>
   );
