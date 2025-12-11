@@ -23,20 +23,25 @@ code {
     monospace;
 }
 
-/* Custom scrollbar */
+/* --- Glassy Scrollbar Effect --- */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 12px; /* Slightly wider to show the glass effect */
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a2e;
+  background: transparent; /* Clear background */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #6366f1;
-  border-radius: 4px;
+  /* Glassy look: Low opacity white + subtle border */
+  background-color: rgba(255, 255, 255, 0.1); 
+  border: 1px solid rgba(255, 255, 255, 0.2); 
+  border-radius: 100vh; /* Pill shape */
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4f46e5;
+  /* Light catches the glass on hover */
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
