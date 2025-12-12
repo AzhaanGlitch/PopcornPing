@@ -22,13 +22,13 @@ const Dashboard = () => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [generatedCode, setGeneratedCode] = useState(''); 
-  const [joinCode, setJoinCode] = useState(''); 
+  const [joinCode, setJoinCode] = useState(''); // New state for joining
   
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Background image URL 
-  const backgroundImageURL = '../dashboard-bg.jpg'; 
+  // Background image
+  const backgroundImageURL = './/dashboard-bg.jpg';
 
   useEffect(() => {
     fetchRooms();

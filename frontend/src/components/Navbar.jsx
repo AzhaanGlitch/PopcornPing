@@ -2,8 +2,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-// Default avatar for non-Google users
-const DEFAULT_AVATAR = "https://api.dicebear.com/7.x/avataaars/svg?seed=PopcornPing";
+// Collection of default avatars for random selection
+const DEFAULT_AVATARS = [
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=PopcornPing",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Precious"
+];
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -22,8 +27,17 @@ const Navbar = () => {
     if (user && user.avatar && user.avatar.trim() !== '') {
       return user.avatar;
     }
-    // Otherwise use default avatar
-    return DEFAULT_AVATAR;
+    
+    // Select a consistent "random" avatar based on the user's identity
+    // This ensures the avatar stays the same for the user session instead of flickering on every render
+    const uniqueSeed = user?.email || user?.username || 'default';
+    let hash = 0;
+    for (let i = 0; i < uniqueSeed.length; i++) {
+      hash = uniqueSeed.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % DEFAULT_AVATARS.length;
+    
+    return DEFAULT_AVATARS[index];
   };
 
   // Get display name
@@ -76,9 +90,9 @@ const Navbar = () => {
                 alt="Profile" 
                 className="h-full w-full object-cover" 
                 onError={(e) => {
-                  // Fallback if image fails to load (e.g., bad URL or network error)
+                  // Fallback if image fails to load
                   console.error('Avatar failed to load, using default');
-                  e.target.src = DEFAULT_AVATAR;
+                  e.target.src = DEFAULT_AVATARS[0];
                 }}
               />
             </div>
