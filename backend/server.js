@@ -57,20 +57,51 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 
+// Store active rooms and users
+const rooms = {};
+
 // Socket.io for WebRTC signaling
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
   
   socket.on('join-room', (roomId, userId) => {
     socket.join(roomId);
-    socket.to(roomId).emit('user-connected', userId);
     
-    socket.on('disconnect', () => {
-      socket.to(roomId).emit('user-disconnected', userId);
-    });
+    // Initialize room if it doesn't exist
+    if (!rooms[roomId]) {
+      rooms[roomId] = [];
+    }
+    
+    // Add user to room
+    rooms[roomId].push({ socketId: socket.id, userId });
+    
+    // Notify all other users in the room
+    const otherUsers = rooms[roomId].filter(user => user.socketId !== socket.id);
+    
+    // Send existing users to the new user
+    socket.emit('all-users', otherUsers.map(u => u.socketId));
+    
+    // Notify other users about the new user
+    socket.to(roomId).emit('user-joined', socket.id);
+    
+    console.log(`User ${userId} joined room ${roomId}. Total users: ${rooms[roomId].length}`);
   });
   
   // WebRTC signaling
+  socket.on('sending-signal', (payload) => {
+    io.to(payload.userToSignal).emit('user-joined', {
+      signal: payload.signal,
+      callerId: payload.callerId
+    });
+  });
+  
+  socket.on('returning-signal', (payload) => {
+    io.to(payload.callerId).emit('receiving-returned-signal', {
+      signal: payload.signal,
+      id: socket.id
+    });
+  });
+  
   socket.on('offer', (offer, roomId) => {
     socket.to(roomId).emit('offer', offer, socket.id);
   });
@@ -89,6 +120,23 @@ io.on('connection', (socket) => {
   
   socket.on('screen-share-stopped', (roomId) => {
     socket.to(roomId).emit('screen-share-stopped', socket.id);
+  });
+  
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+    
+    // Remove user from all rooms
+    for (const roomId in rooms) {
+      rooms[roomId] = rooms[roomId].filter(user => user.socketId !== socket.id);
+      
+      // Notify others in the room
+      socket.to(roomId).emit('user-disconnected', socket.id);
+      
+      // Clean up empty rooms
+      if (rooms[roomId].length === 0) {
+        delete rooms[roomId];
+      }
+    }
   });
 });
 
