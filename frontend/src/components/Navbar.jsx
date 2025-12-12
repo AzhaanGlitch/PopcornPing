@@ -1,14 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-// Ensure this path matches your file structure
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext';
 
-// This is the dummy image that will show for EVERY user
-const DUMMY_PROFILE_IMG = "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix";
+// Default avatar for non-Google users
+const DEFAULT_AVATAR = "https://api.dicebear.com/7.x/avataaars/svg?seed=PopcornPing";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  // Get data directly from your custom AuthProvider
   const { user, logout } = useAuth();
 
   const handleLogout = async () => {
@@ -18,6 +16,16 @@ const Navbar = () => {
     } catch (error) {
       console.error("Logout failed", error);
     }
+  };
+
+  // Determine which avatar to use
+  const getAvatarUrl = () => {
+    // If user has an avatar property (from Google OAuth), use it
+    if (user?.avatar) {
+      return user.avatar;
+    }
+    // Otherwise use default avatar
+    return DEFAULT_AVATAR;
   };
 
   return (
@@ -36,7 +44,6 @@ const Navbar = () => {
             e.target.parentNode.innerHTML = '<div class="h-10 w-10 flex items-center justify-center text-white text-xl font-bold border border-white rounded-full">P</div>';
           }}
         />
-        {/* Logo Text: Pure White */}
         <span className="ml-4 text-white font-bold tracking-[0.2em] text-sm uppercase">
           PopcornPing
         </span>
@@ -58,12 +65,16 @@ const Navbar = () => {
               </span>
             </div>
 
-            {/* Fixed Dummy Avatar for Everyone */}
+            {/* Dynamic Avatar - Google image for OAuth users, default for email/password */}
             <div className="h-10 w-10 rounded-full border border-white/30 bg-white/10 flex items-center justify-center overflow-hidden">
               <img 
-                src={DUMMY_PROFILE_IMG} 
+                src={getAvatarUrl()} 
                 alt="Profile" 
                 className="h-full w-full object-cover" 
+                onError={(e) => {
+                  // Fallback if image fails to load
+                  e.target.src = DEFAULT_AVATAR;
+                }}
               />
             </div>
           </div>
@@ -78,7 +89,6 @@ const Navbar = () => {
           </button>
         </div>
       ) : (
-        /* Fallback: Login Button if context is empty */
         <button 
           onClick={() => navigate('/login')}
           className="text-gray-400 hover:text-white transition text-sm tracking-wider"
