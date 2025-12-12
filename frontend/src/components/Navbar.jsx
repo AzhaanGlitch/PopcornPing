@@ -18,14 +18,20 @@ const Navbar = () => {
     }
   };
 
-  // Determine which avatar to use
+  // Determine which avatar to use - FIXED
   const getAvatarUrl = () => {
-    // If user has an avatar property (from Google OAuth), use it
-    if (user?.avatar) {
+    // Check if user exists and has an avatar property (from Google OAuth)
+    if (user && user.avatar && user.avatar.trim() !== '') {
       return user.avatar;
     }
     // Otherwise use default avatar
     return DEFAULT_AVATAR;
+  };
+
+  // Get display name - FIXED
+  const getDisplayName = () => {
+    if (!user) return 'User';
+    return user.username || user.name || 'User';
   };
 
   return (
@@ -55,9 +61,9 @@ const Navbar = () => {
           
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-end">
-              {/* Name from AuthContext */}
+              {/* Name from AuthContext - FIXED */}
               <span className="text-white text-sm font-semibold tracking-wider">
-                {user.name || user.username || 'User'}
+                {getDisplayName()}
               </span>
               {/* Email from AuthContext */}
               <span className="text-[10px] text-gray-300 uppercase tracking-widest">
@@ -65,7 +71,7 @@ const Navbar = () => {
               </span>
             </div>
 
-            {/* Dynamic Avatar - Google image for OAuth users, default for email/password */}
+            {/* Dynamic Avatar - FIXED to properly show Google images */}
             <div className="h-10 w-10 rounded-full border border-white/30 bg-white/10 flex items-center justify-center overflow-hidden">
               <img 
                 src={getAvatarUrl()} 
@@ -73,6 +79,7 @@ const Navbar = () => {
                 className="h-full w-full object-cover" 
                 onError={(e) => {
                   // Fallback if image fails to load
+                  console.error('Avatar failed to load, using default');
                   e.target.src = DEFAULT_AVATAR;
                 }}
               />
