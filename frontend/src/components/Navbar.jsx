@@ -18,9 +18,7 @@ const Navbar = () => {
     }
   };
 
-  // Determine which avatar to use - FIXED
   const getAvatarUrl = () => {
-    // Check if user exists and has an avatar property (from Google OAuth)
     if (user && user.avatar && user.avatar.trim() !== '') {
       return user.avatar;
     }
@@ -28,7 +26,7 @@ const Navbar = () => {
     return DEFAULT_AVATAR;
   };
 
-  // Get display name - FIXED
+  // Get display name
   const getDisplayName = () => {
     if (!user) return 'User';
     return user.username || user.name || 'User';
@@ -61,7 +59,7 @@ const Navbar = () => {
           
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-end">
-              {/* Name from AuthContext - FIXED */}
+              {/* Name from AuthContext */}
               <span className="text-white text-sm font-semibold tracking-wider">
                 {getDisplayName()}
               </span>
@@ -71,14 +69,14 @@ const Navbar = () => {
               </span>
             </div>
 
-            {/* Dynamic Avatar - FIXED to properly show Google images */}
+            {/* Dynamic Avatar */}
             <div className="h-10 w-10 rounded-full border border-white/30 bg-white/10 flex items-center justify-center overflow-hidden">
               <img 
                 src={getAvatarUrl()} 
                 alt="Profile" 
                 className="h-full w-full object-cover" 
                 onError={(e) => {
-                  // Fallback if image fails to load
+                  // Fallback if image fails to load (e.g., bad URL or network error)
                   console.error('Avatar failed to load, using default');
                   e.target.src = DEFAULT_AVATAR;
                 }}
