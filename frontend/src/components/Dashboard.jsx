@@ -2,17 +2,60 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { roomAPI } from '../utils/api';
+import Navbar from './Navbar'; 
+
+// --- Icons ---
+const CopyIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+);
+const LinkIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+);
+const LockIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+);
+const MicIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+);
+const ShareIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+);
+const TrashIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+);
+const UserIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+);
+
+// --- Components ---
+const Toggle = ({ enabled, onChange }) => (
+  <button
+    onClick={() => onChange(!enabled)}
+    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+      enabled ? 'bg-white' : 'bg-gray-800'
+    }`}
+  >
+    <span
+      className={`${
+        enabled ? 'translate-x-6 bg-black' : 'translate-x-1 bg-gray-500'
+      } inline-block h-4 w-4 transform rounded-full transition-transform`}
+    />
+  </button>
+);
 
 const Dashboard = () => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [roomName, setRoomName] = useState('');
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState('J-83K-49D'); 
+  const [isPasswordProtected, setIsPasswordProtected] = useState(false);
+  const [waitingRoom, setWaitingRoom] = useState(false); 
+
   const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchRooms();
+    setGeneratedCode(`J-${Math.floor(100 + Math.random() * 900)}K-${Math.floor(10 + Math.random() * 90)}D`);
   }, []);
 
   const fetchRooms = async () => {
@@ -24,12 +67,17 @@ const Dashboard = () => {
     }
   };
 
-  const handleCreateRoom = async (e) => {
-    e.preventDefault();
+  const handleCreateRoom = async () => {
     setLoading(true);
-
+    const roomName = `Room ${generatedCode}`; 
     try {
-      const response = await roomAPI.createRoom({ name: roomName });
+      const response = await roomAPI.createRoom({ 
+        name: roomName,
+        settings: {
+          passwordProtected: isPasswordProtected,
+          muteOnEntry: waitingRoom
+        }
+      });
       navigate(`/room/${response.data.room.roomId}`);
     } catch (error) {
       console.error('Error creating room:', error);
@@ -39,138 +87,199 @@ const Dashboard = () => {
     }
   };
 
-  const handleJoinRoom = (roomId) => {
-    navigate(`/room/${roomId}`);
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    alert("Copied to clipboard!");
+  };
+
+  const handleDeleteRoom = async (e, roomId) => {
+    e.stopPropagation(); 
+    if(window.confirm("End this session?")) {
+        // API call to delete room
+        alert("End room functionality connected");
+    }
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-12 bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Welcome back, {user?.username}!
-          </h1>
-          <p className="text-gray-400">Create or join a room to start your video call</p>
-        </div>
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-gray-700">
+      
+      {/* 1. Header (Navbar) */}
+      <Navbar />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Create Room Card */}
-          <div className="lg:col-span-2">
-            <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 backdrop-blur-sm border border-purple-500/30 rounded-2xl p-8 shadow-xl">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center">
-                  <span className="text-2xl">🎬</span>
-                </div>
-                <h2 className="text-2xl font-bold text-white">Create New Room</h2>
-              </div>
+      {/* 2. Main Layout - Added padding-top (pt-24) to prevent Navbar overlap */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-              <form onSubmit={handleCreateRoom}>
-                <div className="mb-4">
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Room Name (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={roomName}
-                    onChange={(e) => setRoomName(e.target.value)}
-                    placeholder="e.g., Team Meeting, Study Session"
-                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-4 px-6 rounded-lg transition disabled:opacity-50 transform hover:scale-105"
-                >
-                  {loading ? 'Creating...' : 'Create Room'}
-                </button>
-              </form>
-
-              <div className="mt-6 flex items-center space-x-2 text-sm text-gray-400">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-                <span>Your room will be active for 24 hours</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="space-y-4">
-            <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700 rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Active Rooms</span>
-                <span className="text-3xl">🚀</span>
-              </div>
-              <div className="text-3xl font-bold text-white">{rooms.length}</div>
-            </div>
-
-            <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700 rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Features</span>
-                <span className="text-3xl">✨</span>
-              </div>
-              <ul className="space-y-2 text-sm text-gray-300">
-                <li className="flex items-center space-x-2">
-                  <span className="text-green-400">✓</span>
-                  <span>HD Video Call</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <span className="text-green-400">✓</span>
-                  <span>Screen Sharing</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <span className="text-green-400">✓</span>
-                  <span>End-to-End Encrypted</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Active Rooms */}
-        {rooms.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-white mb-6">Your Active Rooms</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {rooms.map((room) => (
-                <div
-                  key={room._id}
-                  className="bg-gray-800/30 backdrop-blur-sm border border-gray-700 rounded-xl p-6 hover:border-purple-500 transition-all duration-300 cursor-pointer group"
-                  onClick={() => handleJoinRoom(room.roomId)}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-purple-400 transition">
-                        {room.name}
-                      </h3>
-                      <p className="text-sm text-gray-400">
-                        Room ID: {room.roomId}
-                      </p>
-                    </div>
-                    <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-                      <span className="text-xl">📹</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2 text-sm text-gray-400">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                      </svg>
-                      <span>{room.participants?.length || 0} participant(s)</span>
-                    </div>
-                    <button className="text-purple-400 hover:text-purple-300 text-sm font-semibold">
-                      Join →
+          {/* --- LEFT COLUMN --- */}
+          <div className="lg:col-span-8 flex flex-col gap-6">
+            
+            {/* Block A: Active Rooms & Create Button (Fixed Overlap) */}
+            <div className="bg-[#111] border border-[#222] rounded-3xl p-6 md:p-8 flex flex-col md:flex-row gap-8">
+              
+              {/* Left Side: List of Rooms */}
+              <div className="flex-1 flex flex-col">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-gray-400 text-sm uppercase tracking-wider font-bold">Active Rooms</h2>
+                    <button onClick={fetchRooms} className="text-xs text-gray-500 hover:text-white transition-colors">
+                        Refresh
                     </button>
-                  </div>
                 </div>
-              ))}
+
+                <div className="flex-1 space-y-3 pr-2 overflow-y-auto max-h-[200px] custom-scrollbar">
+                    {rooms.length > 0 ? (
+                    rooms.map((room) => (
+                        <div key={room._id} className="group flex items-center justify-between p-3 bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] hover:border-gray-500 transition-all cursor-pointer">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-[#222] border border-[#333] flex items-center justify-center">
+                                    <span className="text-gray-500 text-[10px] font-bold">RM</span>
+                                </div>
+                                <div className="max-w-[120px] sm:max-w-xs overflow-hidden text-ellipsis whitespace-nowrap">
+                                    <h3 className="font-medium text-gray-200 text-sm truncate">{room.name}</h3>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={(e) => handleDeleteRoom(e, room.roomId)}
+                                className="text-gray-600 hover:text-red-400 transition-colors p-1"
+                            >
+                                <TrashIcon className="w-4 h-4" />
+                            </button>
+                        </div>
+                    ))
+                    ) : (
+                    <div className="flex flex-col items-center justify-center h-full min-h-[120px] text-gray-600 border border-dashed border-[#222] rounded-xl bg-[#151515]">
+                        <p className="text-sm">No active rooms</p>
+                    </div>
+                    )}
+                </div>
+              </div>
+
+              {/* Right Side: Create Room Button (Static Position - No Overlap) */}
+              <div className="w-full md:w-64 flex-shrink-0">
+                  <button 
+                    onClick={handleCreateRoom}
+                    disabled={loading}
+                    className="w-full h-full min-h-[160px] rounded-2xl bg-gradient-to-b from-[#2a2a2a] to-black border border-gray-700 shadow-lg flex flex-col items-center justify-center gap-3 group hover:border-white/40 transition-all"
+                  >
+                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-black group-hover:scale-110 transition-transform">
+                            {loading ? (
+                                <div className="animate-spin w-5 h-5 border-2 border-black border-t-transparent rounded-full"></div>
+                            ) : (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                            )}
+                        </div>
+                        <div className="text-center">
+                            <span className="block text-white font-bold text-lg">Create Room</span>
+                            <span className="text-gray-500 text-xs">Private Session</span>
+                        </div>
+                  </button>
+              </div>
             </div>
+
+            {/* Block B: Share Your Code */}
+            <div className="bg-[#111] border border-[#222] rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="space-y-3 text-center md:text-left w-full">
+                 <h2 className="text-lg text-gray-300 font-medium">Share Your Code</h2>
+                 <div>
+                    <span className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-600 tracking-tight block">
+                       {generatedCode}
+                    </span>
+                 </div>
+                 
+                 <div className="flex flex-wrap gap-3 mt-4 justify-center md:justify-start">
+                    <button 
+                      onClick={() => copyToClipboard(generatedCode)}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] rounded-lg text-xs text-gray-400 hover:text-white border border-[#333] transition-colors"
+                    >
+                       <CopyIcon className="w-3 h-3" /> Copy Code
+                    </button>
+                    <button 
+                       onClick={() => copyToClipboard(`https://popcornping.com/join/${generatedCode}`)}
+                       className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] rounded-lg text-xs text-gray-400 hover:text-white border border-[#333] transition-colors"
+                    >
+                       <LinkIcon className="w-3 h-3" /> Copy Link
+                    </button>
+                 </div>
+              </div>
+              
+              <div className="w-full md:w-auto flex-shrink-0">
+                 <button 
+                    onClick={handleCreateRoom}
+                    className="w-full md:w-48 py-4 bg-white hover:bg-gray-200 text-black font-bold text-lg rounded-xl shadow-lg transition-all"
+                 >
+                    Start Meeting
+                 </button>
+              </div>
+            </div>
+
           </div>
-        )}
-      </div>
+
+          {/* --- RIGHT COLUMN --- */}
+          <div className="lg:col-span-4 flex flex-col gap-6">
+            
+            {/* Block C: Room Configuration */}
+            <div className="bg-[#111] border border-[#222] rounded-3xl p-8 flex flex-col justify-center min-h-[240px]">
+               <h2 className="text-gray-400 text-sm mb-6 font-bold uppercase tracking-wider">Room Configuration</h2>
+               
+               <div className="space-y-6">
+                  {/* Option 1 */}
+                  <div className="flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                        <LockIcon className="w-5 h-5 text-gray-500" />
+                        <div className="flex flex-col">
+                            <span className="text-white text-sm font-medium">Require Password</span>
+                        </div>
+                     </div>
+                     <Toggle enabled={isPasswordProtected} onChange={setIsPasswordProtected} />
+                  </div>
+                  
+                  <div className="h-px bg-[#222] w-full"></div>
+
+                  {/* Option 2 */}
+                  <div className="flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                        <MicIcon className="w-5 h-5 text-gray-500" />
+                        <div className="flex flex-col">
+                            <span className="text-white text-sm font-medium">Waiting Room</span>
+                        </div>
+                     </div>
+                     <Toggle enabled={waitingRoom} onChange={setWaitingRoom} />
+                  </div>
+               </div>
+            </div>
+
+            {/* Block D: Share Widget */}
+            <div className="bg-[#111] border border-[#222] rounded-3xl p-8 flex-1 flex flex-col justify-between relative overflow-hidden min-h-[220px]">
+               <div>
+                  <h2 className="text-gray-400 text-sm font-bold uppercase tracking-wider mb-1">Share via Entat</h2>
+                  <p className="text-[11px] text-gray-600">Quick share options</p>
+               </div>
+
+               <div className="flex items-end justify-between mt-6 relative z-10">
+                  <div className="flex gap-3">
+                     <button className="w-12 h-12 rounded-2xl bg-[#1a1a1a] border border-[#333] flex items-center justify-center text-gray-400 hover:bg-white hover:text-black transition-all">
+                        <ShareIcon className="w-5 h-5" />
+                     </button>
+                     <button className="w-12 h-12 rounded-2xl bg-[#1a1a1a] border border-[#333] flex items-center justify-center text-gray-400 hover:bg-white hover:text-black transition-all">
+                        <UserIcon className="w-5 h-5" />
+                     </button>
+                  </div>
+
+                  {/* Circular Progress Mockup */}
+                  <div className="relative w-16 h-16 flex items-center justify-center">
+                     <svg className="w-full h-full transform -rotate-90">
+                        <circle cx="32" cy="32" r="26" stroke="#1a1a1a" strokeWidth="4" fill="none" />
+                        <circle cx="32" cy="32" r="26" stroke="white" strokeWidth="4" fill="none" strokeDasharray="163" strokeDashoffset="100" strokeLinecap="round" />
+                     </svg>
+                     <span className="absolute text-sm font-bold text-white">40</span>
+                  </div>
+               </div>
+            </div>
+
+          </div>
+
+        </div>
+      </main>
     </div>
   );
 };

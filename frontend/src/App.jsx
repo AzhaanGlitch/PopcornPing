@@ -8,6 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Snippets from './components/Snippets';
 import Footer from './components/Footer';
 import Login from './components/Login';
+import Navbar from './components/Navbar'
 
 function App() {
   return (
