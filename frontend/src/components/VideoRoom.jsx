@@ -5,6 +5,29 @@ import Peer from 'simple-peer';
 import { roomAPI } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
+// Icons
+const MicIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+);
+const MicOffIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="1" x2="23" y1="1" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" x2="12" y1="19" y2="23"/></svg>
+);
+const VideoIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg>
+);
+const VideoOffIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M10.66 5H14a2 2 0 0 1 2 2v2.34l1 1L22 7v10"/><path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2l10 10Z"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+);
+const MonitorIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+);
+const PhoneOffIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/><line x1="22" x2="2" y1="2" y2="22"/></svg>
+);
+const CopyIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+);
+
 const VideoRoom = () => {
   const { roomId } = useParams();
   const { user } = useAuth();
@@ -15,6 +38,7 @@ const VideoRoom = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [roomInfo, setRoomInfo] = useState(null);
+  const [showCopied, setShowCopied] = useState(false);
   
   const socketRef = useRef();
   const userVideo = useRef();
@@ -218,6 +242,13 @@ const VideoRoom = () => {
     socketRef.current.emit('screen-share-stopped', roomId);
   };
 
+  const copyRoomLink = () => {
+    const roomLink = `${window.location.origin}/room/${roomId}`;
+    navigator.clipboard.writeText(roomLink);
+    setShowCopied(true);
+    setTimeout(() => setShowCopied(false), 2000);
+  };
+
   const leaveRoom = async () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
@@ -229,30 +260,52 @@ const VideoRoom = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
+      
+      {/* Background Gradient Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-900/10 blur-[150px] rounded-full"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-900/10 blur-[150px] rounded-full"></div>
+      </div>
+
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-white">
-              {roomInfo?.name || 'Video Room'}
-            </h1>
-            <p className="text-sm text-gray-400">Room ID: {roomId}</p>
+      <div className="relative z-10 border-b border-gray-800/50 backdrop-blur-sm bg-black/30">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <img 
+                src="/logo.png" 
+                alt="PopcornPing" 
+                className="h-8 w-8"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+              <div>
+                <h1 className="text-lg font-semibold text-white tracking-wide">
+                  {roomInfo?.name || 'Video Room'}
+                </h1>
+                <p className="text-xs text-gray-500">Room: {roomId}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <button
+                onClick={copyRoomLink}
+                className="px-4 py-2 bg-[#1a1a1a] hover:bg-[#2a2a2a] text-gray-300 hover:text-white rounded-lg transition-all text-sm border border-gray-800 flex items-center gap-2"
+              >
+                <CopyIcon className="w-4 h-4" />
+                {showCopied ? 'Copied!' : 'Copy Link'}
+              </button>
+            </div>
           </div>
-          <button
-            onClick={leaveRoom}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
-          >
-            Leave Room
-          </button>
         </div>
       </div>
 
       {/* Video Grid */}
-      <div className="flex-1 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 h-full">
+      <div className="relative flex-1 p-6 z-10">
+        <div className={`h-full ${peers.length > 0 ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'flex items-center justify-center'}`}>
+          
           {/* Your Video */}
-          <div className="relative bg-gray-800 rounded-xl overflow-hidden aspect-video">
+          <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-2xl overflow-hidden border border-gray-800/50 shadow-2xl aspect-video">
             <video
               ref={userVideo}
               autoPlay
@@ -260,88 +313,142 @@ const VideoRoom = () => {
               playsInline
               className="w-full h-full object-cover"
             />
-            <div className="absolute bottom-4 left-4 bg-gray-900/80 backdrop-blur-sm px-3 py-1 rounded-lg">
-              <span className="text-white text-sm font-medium">You</span>
+            
+            {/* User Label */}
+            <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-gray-700/50">
+              <span className="text-white text-sm font-medium">You {isScreenSharing && '(Sharing)'}</span>
             </div>
+            
+            {/* Video Off Placeholder */}
             {isVideoOff && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-                <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-2xl font-bold">
-                    {user?.username.charAt(0).toUpperCase()}
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
+                <div className="w-24 h-24 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-white text-3xl font-bold">
+                    {user?.username?.charAt(0).toUpperCase() || 'U'}
                   </span>
                 </div>
+              </div>
+            )}
+
+            {/* Muted Indicator */}
+            {isMuted && (
+              <div className="absolute top-4 right-4 bg-red-500/90 backdrop-blur-md p-2 rounded-lg">
+                <MicOffIcon className="w-4 h-4 text-white" />
               </div>
             )}
           </div>
 
           {/* Peer Videos */}
           {peers.map((peer, index) => (
-            <Video key={index} peer={peer.peer} />
+            <Video key={index} peer={peer.peer} peerID={peer.peerID} />
           ))}
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="bg-gray-800 border-t border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-center space-x-4">
-          <button
-            onClick={toggleMute}
-            className={`p-4 rounded-full transition ${
-              isMuted ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-700 hover:bg-gray-600'
-            }`}
-          >
-            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+      {/* Controls Bar */}
+      <div className="relative z-10 border-t border-gray-800/50 backdrop-blur-sm bg-black/30">
+        <div className="max-w-4xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-center gap-4">
+            
+            {/* Mute Button */}
+            <button
+              onClick={toggleMute}
+              className={`p-4 rounded-full transition-all ${
+                isMuted 
+                  ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30' 
+                  : 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-gray-800'
+              }`}
+              title={isMuted ? 'Unmute' : 'Mute'}
+            >
               {isMuted ? (
-                <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
+                <MicOffIcon className="w-5 h-5 text-white" />
               ) : (
-                <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+                <MicIcon className="w-5 h-5 text-white" />
               )}
-            </svg>
-          </button>
+            </button>
 
-          <button
-            onClick={toggleVideo}
-            className={`p-4 rounded-full transition ${
-              isVideoOff ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-700 hover:bg-gray-600'
-            }`}
-          >
-            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+            {/* Video Button */}
+            <button
+              onClick={toggleVideo}
+              className={`p-4 rounded-full transition-all ${
+                isVideoOff 
+                  ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30' 
+                  : 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-gray-800'
+              }`}
+              title={isVideoOff ? 'Turn On Camera' : 'Turn Off Camera'}
+            >
               {isVideoOff ? (
-                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+                <VideoOffIcon className="w-5 h-5 text-white" />
               ) : (
-                <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                <VideoIcon className="w-5 h-5 text-white" />
               )}
-            </svg>
-          </button>
+            </button>
 
-          <button
-            onClick={shareScreen}
-            className={`p-4 rounded-full transition ${
-              isScreenSharing ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-700 hover:bg-gray-600'
-            }`}
-          >
-            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clipRule="evenodd" />
-            </svg>
-          </button>
+            {/* Screen Share Button */}
+            <button
+              onClick={shareScreen}
+              className={`p-4 rounded-full transition-all ${
+                isScreenSharing 
+                  ? 'bg-purple-600 hover:bg-purple-700 shadow-lg shadow-purple-600/30' 
+                  : 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-gray-800'
+              }`}
+              title={isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
+            >
+              <MonitorIcon className="w-5 h-5 text-white" />
+            </button>
+
+            <div className="w-px h-10 bg-gray-800 mx-2"></div>
+
+            {/* Leave Button */}
+            <button
+              onClick={leaveRoom}
+              className="px-6 py-4 bg-red-600 hover:bg-red-700 text-white rounded-full transition-all font-medium shadow-lg shadow-red-600/30 flex items-center gap-2"
+            >
+              <PhoneOffIcon className="w-5 h-5" />
+              Leave
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-const Video = ({ peer }) => {
+// Peer Video Component
+const Video = ({ peer, peerID }) => {
   const ref = useRef();
+  const [hasVideo, setHasVideo] = useState(true);
 
   useEffect(() => {
     peer.on('stream', (stream) => {
       ref.current.srcObject = stream;
+      
+      // Check if stream has video
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        setHasVideo(videoTrack.enabled);
+        videoTrack.onended = () => setHasVideo(false);
+      }
     });
   }, [peer]);
 
   return (
-    <div className="relative bg-gray-800 rounded-xl overflow-hidden aspect-video">
+    <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-2xl overflow-hidden border border-gray-800/50 shadow-2xl aspect-video">
       <video ref={ref} autoPlay playsInline className="w-full h-full object-cover" />
+      
+      {/* Peer Label */}
+      <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-gray-700/50">
+        <span className="text-white text-sm font-medium">Participant</span>
+      </div>
+
+      {/* Video Off Placeholder */}
+      {!hasVideo && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+            <span className="text-white text-3xl font-bold">P</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
