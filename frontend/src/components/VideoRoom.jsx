@@ -50,18 +50,55 @@ const VideoRoom = () => {
     fetchRoomInfo();
     initializeMedia();
 
+    // FIXED: Proper cleanup when component unmounts
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-      if (screenStreamRef.current) {
-        screenStreamRef.current.getTracks().forEach(track => track.stop());
-      }
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
+      cleanupConnection();
     };
   }, []);
+
+  // FIXED: Comprehensive cleanup function
+  const cleanupConnection = () => {
+    console.log('Cleaning up video room connection...');
+    
+    // Stop all media tracks
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+        console.log(`Stopped ${track.kind} track`);
+      });
+      streamRef.current = null;
+    }
+    
+    // Stop screen sharing tracks
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(track => {
+        track.stop();
+        console.log(`Stopped screen share ${track.kind} track`);
+      });
+      screenStreamRef.current = null;
+    }
+    
+    // Destroy all peer connections
+    peersRef.current.forEach(({ peer }) => {
+      if (peer) {
+        peer.destroy();
+      }
+    });
+    peersRef.current = [];
+    setPeers([]);
+    
+    // Disconnect socket
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+      console.log('Socket disconnected');
+    }
+    
+    // Clear video element
+    if (userVideo.current) {
+      userVideo.current.srcObject = null;
+    }
+  };
 
   const fetchRoomInfo = async () => {
     try {
@@ -249,13 +286,12 @@ const VideoRoom = () => {
     setTimeout(() => setShowCopied(false), 2000);
   };
 
+  // FIXED: Proper leave room function with full cleanup
   const leaveRoom = async () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-    }
+    // Cleanup all connections first
+    cleanupConnection();
+    
+    // Navigate back to dashboard
     navigate('/dashboard');
   };
 
@@ -304,13 +340,14 @@ const VideoRoom = () => {
       <div className="relative flex-1 p-6 z-10">
         <div className={`h-full ${peers.length > 0 ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'flex items-center justify-center'}`}>
           
-          {/* Your Video */}
+          {/* Your Video - FIXED: Added style to prevent mirror effect */}
           <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-2xl overflow-hidden border border-gray-800/50 shadow-2xl aspect-video">
             <video
               ref={userVideo}
               autoPlay
               muted
               playsInline
+              style={{ transform: 'scaleX(1)' }} /* FIXED: Removed mirror effect */
               className="w-full h-full object-cover"
             />
             
@@ -414,7 +451,7 @@ const VideoRoom = () => {
   );
 };
 
-// Peer Video Component
+// Peer Video Component - FIXED: Also removed mirror effect
 const Video = ({ peer, peerID }) => {
   const ref = useRef();
   const [hasVideo, setHasVideo] = useState(true);
@@ -434,7 +471,13 @@ const Video = ({ peer, peerID }) => {
 
   return (
     <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-2xl overflow-hidden border border-gray-800/50 shadow-2xl aspect-video">
-      <video ref={ref} autoPlay playsInline className="w-full h-full object-cover" />
+      <video 
+        ref={ref} 
+        autoPlay 
+        playsInline 
+        style={{ transform: 'scaleX(1)' }} /* FIXED: Removed mirror effect for peers too */
+        className="w-full h-full object-cover" 
+      />
       
       {/* Peer Label */}
       <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-gray-700/50">
