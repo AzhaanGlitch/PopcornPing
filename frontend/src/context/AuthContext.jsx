@@ -22,13 +22,10 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       const response = await authAPI.getCurrentUser();
-      // FIXED: Ensure user data includes all necessary fields
       const userData = response.data.user;
       setUser({
         ...userData,
-        // Ensure username is available for display
         username: userData.username || userData.name || 'User',
-        // Ensure avatar is properly passed
         avatar: userData.avatar || ''
       });
     } catch (error) {
