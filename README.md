@@ -1,5 +1,4 @@
 # PopcornPing - Video Calling Platform
-
 A modern video calling platform with screen sharing capabilities, built with React, Node.js, and WebRTC.
 
 ## Features
